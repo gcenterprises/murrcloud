@@ -1,3 +1,4 @@
+sudo wget https://raw.githubusercontent.com/gcenterprises/murrcloud/murrcloud_amyl_ent1769/murrcloudinstall.sh
 sudo wget https://raw.githubusercontent.com/gcenterprises/murrcloud/murrcloud_amyl_ent1769/murrcloud_install.sh
 ```
 
