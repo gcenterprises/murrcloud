@@ -4,6 +4,10 @@ sudo wget https://raw.githubusercontent.com/gcenterprises/murrcloud/murrcloud_am
 ```
 
 #### 3. Make the script executable
+
+sudo chmod +x Murrcloudinstall.sh
+sudo ./Murrcloudinstall.sh
+
 ```
 sudo chmod +x murrcloud_install.sh
 
