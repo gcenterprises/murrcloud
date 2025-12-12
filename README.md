@@ -1,6 +1,7 @@
 sudo wget https://raw.githubusercontent.com/gcenterprises/murrcloud/murrcloud_amyl_ent1769/Murrcloudinstall.sh
 
 sudo chmod +x Murrcloudinstall.sh
+
 sudo ./Murrcloudinstall.sh
 
 sudo wget https://raw.githubusercontent.com/gcenterprises/murrcloud/murrcloud_amyl_ent1769/murrcloud_install.sh
