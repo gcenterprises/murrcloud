@@ -10,7 +10,8 @@ OE_HOME="/opt/${OE_USER}"
 OE_HOME_EXT="${OE_HOME}/${OE_USER}-server"
 INSTALL_WKHTMLTOPDF="True"
 OE_PORT="8069"
-OE_VERSION="master"
+# Default to 'main' instead of 'master'
+OE_VERSION="main"
 IS_ENTERPRISE="False"
 # Installs PostgreSQL V14 instead of defaults - optional
 INSTALL_POSTGRESQL_FOURTEEN="False"
@@ -24,11 +25,11 @@ LONGPOLLING_PORT="8072"
 ENABLE_SSL="False"
 ADMIN_EMAIL="partners@murrcloud.com"
 
-# Repository to clone (ensure .git suffix)
-REPO_URL="https://github.com/ShaheenHossain/murrcloud_amyliu7778_17ent.git"
+# Repository to clone (ensure .git suffix) - updated to point to your public repo
+REPO_URL="https://github.com/gcenterprises/murrcloud.git"
 
 # Requirements fallback raw URL (fixed to raw.githubusercontent)
-FALLBACK_REQUIREMENTS_URL="https://raw.githubusercontent.com/ShaheenHossain/requirements.txt/master/requirements.txt"
+FALLBACK_REQUIREMENTS_URL="https://raw.githubusercontent.com/gcenterprises/murrcloud/main/requirements.txt"
 
 # Node major version to install
 NODE_MAJOR="18"
@@ -118,6 +119,31 @@ install_wkhtmltopdf(){
   fi
 }
 
+# Determine which branch to use for cloning:
+# - If OE_VERSION exists on the remote, use it.
+# - Else try to detect remote default branch via ls-remote --symref HEAD.
+# - Fallback to 'main'.
+determine_branch_to_use(){
+  local want="${OE_VERSION:-}"
+  # If OE_VERSION explicitly set and exists remotely, use it
+  if [[ -n "${want}" ]] && git ls-remote --heads "${REPO_URL}" "${want}" | grep -q 'refs/heads'; then
+    echo "${want}"
+    return 0
+  fi
+
+  # Try to detect remote default branch (HEAD -> refs/heads/<branch>)
+  local remote_head
+  remote_head="$(git ls-remote --symref "${REPO_URL}" HEAD 2>/dev/null | awk '/^ref:/ {print $2}' | sed 's#refs/heads/##' || true)"
+  if [[ -n "${remote_head}" ]]; then
+    echo "${remote_head}"
+    return 0
+  fi
+
+  # Fallback
+  echo "main"
+  return 0
+}
+
 # -----------------------------
 # Start
 # -----------------------------
@@ -191,12 +217,16 @@ if [[ -d "${OE_HOME_EXT}/.git" ]]; then
   fi
 else
   rm -rf "${OE_HOME_EXT}"
+  # Determine branch to use (handles repos using 'main' or other defaults)
+  BRANCH_TO_USE="$(determine_branch_to_use)"
+  log "Using branch '${BRANCH_TO_USE}' for clone (OE_VERSION='${OE_VERSION}')"
+
   # Try cloning as the app user preserving HOME and preventing interactive prompts
-  if sudo -u "${OE_USER}" -H sh -c "GIT_TERMINAL_PROMPT=0 git -c credential.helper= -c core.askpass= clone --depth 1 --branch '${OE_VERSION}' '${REPO_URL}' '${OE_HOME_EXT}'"; then
+  if sudo -u "${OE_USER}" -H sh -c "GIT_TERMINAL_PROMPT=0 git -c credential.helper= -c core.askpass= clone --depth 1 --branch '${BRANCH_TO_USE}' '${REPO_URL}' '${OE_HOME_EXT}'"; then
     log "Cloned repo as ${OE_USER}"
   else
     log "Clone as ${OE_USER} failed; attempting clone as root and then chowning"
-    if git clone --depth 1 --branch "${OE_VERSION}" "${REPO_URL}" "${OE_HOME_EXT}"; then
+    if git clone --depth 1 --branch "${BRANCH_TO_USE}" "${REPO_URL}" "${OE_HOME_EXT}"; then
       chown -R "${OE_USER}:${OE_USER}" "${OE_HOME_EXT}"
       log "Cloned repo as root and changed ownership to ${OE_USER}"
     else
