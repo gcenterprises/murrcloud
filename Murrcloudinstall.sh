@@ -29,7 +29,7 @@ ADMIN_EMAIL="partners@murrcloud.com"
 REPO_URL="https://github.com/gcenterprises/murrcloud.git"
 
 # Requirements fallback raw URL (fixed to raw.githubusercontent)
-FALLBACK_REQUIREMENTS_URL="https://raw.githubusercontent.com/gcenterprises/murrcloud/main/requirements.txt"
+FALLBACK_REQUIREMENTS_URL="https://raw.githubusercontent.com/gcenterprises/murrcloud17enterprise/main/requirements.txt"
 
 # Node major version to install
 NODE_MAJOR="18"
